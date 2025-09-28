@@ -1,22 +1,24 @@
 # app.py
+import os
 from dotenv import load_dotenv
-load_dotenv()  # .envファイルから環境変数を読み込む
-
 import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
 
-# OpenAI APIキーは .env ファイルに設定しておく
-# 例: .env ファイルに OPENAI_API_KEY="sk-xxxx" を記載
-chat = ChatOpenAI(model="gpt-4o-mini")
+# ローカル環境用: .env読み込み
+load_dotenv()
+
+# APIキーの取得: Cloudなら st.secrets から、ローカルなら os.environ から
+api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
+
+# ChatOpenAIの初期化（APIキーを明示的に渡す）
+chat = ChatOpenAI(model="gpt-4o-mini", api_key=api_key)
+
 
 # ----------------------------
 # 関数定義
 # ----------------------------
 def run_expert_chat(user_input: str, expert_type: str) -> str:
-    """
-    入力テキストと専門家タイプを受け取り、LLMからの回答を返す関数
-    """
     expert_prompts = {
         "医療専門家": "あなたは医療に精通した専門家として、正確で分かりやすい健康アドバイスを行ってください。ただし診断は行わず、一般的な情報提供に留めてください。",
         "ITコンサルタント": "あなたはIT分野の専門家として、最新技術やシステム開発に関する助言を行ってください。専門用語はわかりやすく説明してください。",
